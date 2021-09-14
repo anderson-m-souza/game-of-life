@@ -7,7 +7,7 @@ def get_arguments():
     parser.add_argument(
         '-x',
         '--width',
-        default=10,
+        default=30,
         type=int,
         help='Board width.'
     )
@@ -64,17 +64,41 @@ def dead_or_alive(life_percentage):
         return 1
 
 
+def render(
+        board_state,
+        live_char='#',
+        dead_char=' '
+    ):
+    columns = len(board_state[0])
+    line = " " + "-" * columns
+    print(line)
+    
+    for row in board_state:
+        print("|", end="")
+        for cell in row:
+            if cell == 0:
+                state = dead_char
+            else:
+                state = live_char
+
+            print(state, end="")
+        print("|", end="\n")
+
+    print(line)
+
+
 def main():
     args = get_arguments()
 
     width = args.width
     height = args.height
-    dead = dead_state(width, height)
+    dead_state_board = dead_state(width, height)
 
     life_percentage = args.life_percentage / 100
-    random = random_state(dead, life_percentage)
+    random_state_board = random_state(dead_state_board, life_percentage)
 
-    print(random)
+    render(random_state_board)
+
 
 if __name__ == "__main__":
     main()
