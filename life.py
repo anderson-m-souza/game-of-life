@@ -87,6 +87,72 @@ def render(
     print(line)
 
 
+def next_board_state(board):
+    y = len(board)
+    x = len(board[0])
+    new_board = list()
+    i = 0
+    while i < y:
+        new_row = []
+        j = 0
+        while j < x:
+            new_state = next_cell_state(board, i, j)
+            new_row.append(new_state)
+            j += 1
+
+        new_board.append(new_row)
+        i += 1
+
+    return new_board
+
+
+def next_cell_state(board, row, cell):
+    first_row = row == 0
+    last_row = row == len(board) - 1
+    first_cell = cell == 0
+    last_cell = cell == len(board[row]) - 1
+    live_neighbors = 0
+    
+    if not first_row:
+        live_neighbors += board[row - 1][cell]
+        if not first_cell:
+            live_neighbors += board[row - 1][cell - 1]
+        if not last_cell:
+            live_neighbors += board[row - 1][cell + 1]
+
+    if not first_cell:
+        live_neighbors += board[row][cell - 1]
+
+    if not last_cell:
+        live_neighbors += board[row][cell + 1]
+
+    if not last_row:
+        live_neighbors += board[row + 1][cell]
+        if not first_cell:
+            live_neighbors += board[row + 1][cell - 1]
+        if not last_cell:
+            live_neighbors += board[row + 1][cell + 1]
+
+    state = board[row][cell]
+    new_state = calc_state(state, live_neighbors)
+
+    return new_state
+
+
+def calc_state(state, live_neighbors):
+    if live_neighbors == 0 or live_neighbors == 1:
+        return 0
+    elif state == 1:
+        if live_neighbors <= 3:
+            return 1
+        else:
+            return 0
+    elif live_neighbors == 3:
+        return 1
+    else:
+        return 0
+
+
 def main():
     args = get_arguments()
 
