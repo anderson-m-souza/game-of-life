@@ -18,7 +18,7 @@ def get_arguments():
     parser.add_argument(
         '-y',
         '--height',
-        default=size.lines - 2,
+        default=size.lines - 3,
         type=int,
         help='Board height.'
     )
@@ -30,8 +30,36 @@ def get_arguments():
         help = ('Percentage chance of cells ititializing alive. '
                 'Only integers are allowed, and defaults to 50.')
     )
+    parser.add_argument(
+        '-f',
+        '--file',
+        metavar='FILE',
+        help='Load initial state from a file.'
+    )
+    parser.add_argument(
+        '-i',
+        '--interval',
+        default=0.1,
+        type=float,
+        help='Time interval in seconds between states.'
+    )
 
     return parser.parse_args()
+
+
+def load_initial_state(path):
+    board = []
+
+    with open(path, 'r') as f:
+        for line in f.readlines():
+            row = []
+            for x in line:
+                if x != "\n":
+                    row.append(int(x))
+            board.append(row)
+
+    return board
+
 
 
 def dead_state(width, height):
@@ -159,13 +187,13 @@ def calc_state(state, live_neighbors):
         return 0
 
 
-def run_life(board):
+def run_life(board, interval):
     new_board = next_board_state(board)
 
     while new_board != board:
         rendered = render(new_board, live_char="•")
-        print(rendered, end=" ")
-        time.sleep(0.1)
+        print(rendered)
+        time.sleep(interval)
         board = new_board
         new_board = next_board_state(new_board)
 
@@ -173,14 +201,18 @@ def run_life(board):
 def main():
     args = get_arguments()
 
-    width = args.width
-    height = args.height
-    dead_state_board = dead_state(width, height)
+    if args.file:
+        initial_state = load_initial_state(args.file)
+    else:
+        width = args.width
+        height = args.height
+        dead_state_board = dead_state(width, height)
 
-    life_percentage = args.life_percentage / 100
-    random_state_board = random_state(dead_state_board, life_percentage)
+        life_percentage = args.life_percentage / 100
+        random_state_board = random_state(dead_state_board, life_percentage)
+        initial_state = random_state_board
 
-    run_life(random_state_board)
+    run_life(initial_state, args.interval)
 
 
 if __name__ == "__main__":
