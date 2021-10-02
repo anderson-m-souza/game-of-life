@@ -1,20 +1,24 @@
 import argparse
+import os
 import random
+import time
 
 
 def get_arguments():
     parser = argparse.ArgumentParser()
+
+    size = os.get_terminal_size()
     parser.add_argument(
         '-x',
         '--width',
-        default=30,
+        default=size.columns - 2,
         type=int,
         help='Board width.'
     )
     parser.add_argument(
         '-y',
         '--height',
-        default=10,
+        default=size.lines - 2,
         type=int,
         help='Board height.'
     )
@@ -71,20 +75,22 @@ def render(
     ):
     columns = len(board_state[0])
     line = " " + "-" * columns
-    print(line)
+    
+    output = line + "\n"
     
     for row in board_state:
-        print("|", end="")
+        output += "|"
         for cell in row:
             if cell == 0:
                 state = dead_char
             else:
                 state = live_char
 
-            print(state, end="")
-        print("|", end="\n")
+            output += state
+        output += "|\n"
 
-    print(line)
+    output += line
+    return output
 
 
 def next_board_state(board):
@@ -153,6 +159,17 @@ def calc_state(state, live_neighbors):
         return 0
 
 
+def run_life(board):
+    new_board = next_board_state(board)
+
+    while new_board != board:
+        rendered = render(new_board, live_char="•")
+        print(rendered, end=" ")
+        time.sleep(0.1)
+        board = new_board
+        new_board = next_board_state(new_board)
+
+
 def main():
     args = get_arguments()
 
@@ -163,7 +180,7 @@ def main():
     life_percentage = args.life_percentage / 100
     random_state_board = random_state(dead_state_board, life_percentage)
 
-    render(random_state_board)
+    run_life(random_state_board)
 
 
 if __name__ == "__main__":
