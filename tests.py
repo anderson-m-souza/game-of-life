@@ -4,7 +4,7 @@ from life import main, next_board_state, render
 def next_board_state_tests():
 
     def test_state(initial, expected, name):
-        actual_state = next_board_state(initial)
+        actual_state = next_board_state(initial, 'classic')
 
         if expected == actual_state:
             print("Passed", end=". ")
@@ -13,13 +13,13 @@ def next_board_state_tests():
         print(name)
 
         print("Initial state:")
-        render(initial)
+        print(render(initial))
 
         print("Expected state:")
-        render(expected)
+        print(render(expected))
 
         print("Actual state:")
-        render(actual_state)
+        print(render(actual_state))
 
         print(end='\n')
         

@@ -43,6 +43,17 @@ def get_arguments():
         type=float,
         help='Time interval in seconds between states.'
     )
+    parser.add_argument(
+        '-r',
+        '--rule',
+        default='classic',
+        choices=[
+            'classic',
+            'immortal',
+            'ressurection'
+        ],
+        help='Change the rules.' 
+    )
 
     return parser.parse_args()
 
@@ -121,7 +132,7 @@ def render(
     return output
 
 
-def next_board_state(board):
+def next_board_state(board, rule):
     y = len(board)
     x = len(board[0])
     new_board = list()
@@ -130,7 +141,7 @@ def next_board_state(board):
         new_row = []
         j = 0
         while j < x:
-            new_state = next_cell_state(board, i, j)
+            new_state = next_cell_state(board, i, j, rule)
             new_row.append(new_state)
             j += 1
 
@@ -140,13 +151,29 @@ def next_board_state(board):
     return new_board
 
 
-def next_cell_state(board, row, cell):
+def next_cell_state(board, row, cell, rule):
+    state = board[row][cell]
+
+    if rule == 'immortal' and state == 1:
+        new_state = 1
+
+    elif rule == 'ressurection' and state == 0:
+        new_state = dead_or_alive(.15)
+
+    else:
+        live_neighbors = count_live_neighbors(board, row, cell)
+        new_state = calc_state(state, live_neighbors)
+
+    return new_state
+
+
+def count_live_neighbors(board, row, cell):
     first_row = row == 0
     last_row = row == len(board) - 1
     first_cell = cell == 0
     last_cell = cell == len(board[row]) - 1
     live_neighbors = 0
-    
+
     if not first_row:
         live_neighbors += board[row - 1][cell]
         if not first_cell:
@@ -167,10 +194,7 @@ def next_cell_state(board, row, cell):
         if not last_cell:
             live_neighbors += board[row + 1][cell + 1]
 
-    state = board[row][cell]
-    new_state = calc_state(state, live_neighbors)
-
-    return new_state
+    return live_neighbors
 
 
 def calc_state(state, live_neighbors):
@@ -187,15 +211,15 @@ def calc_state(state, live_neighbors):
         return 0
 
 
-def run_life(board, interval):
-    new_board = next_board_state(board)
+def run_life(board, interval, rule):
+    new_board = next_board_state(board, rule)
 
     while new_board != board:
         rendered = render(new_board, live_char="•")
         print(rendered)
         time.sleep(interval)
         board = new_board
-        new_board = next_board_state(new_board)
+        new_board = next_board_state(new_board, rule)
 
 
 def main():
@@ -212,7 +236,7 @@ def main():
         random_state_board = random_state(dead_state_board, life_percentage)
         initial_state = random_state_board
 
-    run_life(initial_state, args.interval)
+    run_life(initial_state, args.interval, args.rule)
 
 
 if __name__ == "__main__":
